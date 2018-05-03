@@ -15,7 +15,7 @@ import sklearn
 import matplotlib.pyplot as plt
 import skimage
 
-#caffe_root = '/home/gk/caffe-master/'
+#caffe_root = '/home/zl/caffe-master/'
 #import sys
 #sys.path.insert(0, caffe_root + 'python')
 import caffe
