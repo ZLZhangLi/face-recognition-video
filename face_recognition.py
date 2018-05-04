@@ -61,12 +61,6 @@ def compar_pic(path1,path2):
     out = net.forward_all(data = X)
     #fc7是模型的输出,也就是特征值
     #print out
-    print net
-    print net.blobs['fc7']
-    print net.blobs['fc7'].data
-    net
-    net.blobs['fc7']
-    net.blobs['fc7'].data
     feature1 = np.float64(net.blobs['fc7'].data)
     feature1 = np.reshape(feature1,(test_num,4096))
     #np.savetxt('feature1.txt', feature1, delimiter=',')
@@ -100,7 +94,7 @@ def read_image(filelist):
 if __name__ == '__main__':
     namelist = './data/sample_same_frame_images.txt'
     dataset = 'F:/publicData/YouTubeFaces/frame_images_DB'
-    input = 'F:/publicData/YouTubeFaces/frame_images_DB/Ahmed_Chalabi/2/2.521.jpg'
+    input = 'F:/publicData/YouTubeFaces/frame_images_DB/Adel_Al-Jubeir/2/2.59.jpg'
     #while True:
     ret = 0
     recog(input,dataset,namelist)
