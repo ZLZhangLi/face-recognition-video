@@ -95,6 +95,5 @@ if __name__ == '__main__':
     namelist = './data/sample_same_frame_images.txt'
     dataset = 'F:/publicData/YouTubeFaces/frame_images_DB'
     input = 'F:/publicData/YouTubeFaces/frame_images_DB/Adel_Al-Jubeir/2/2.59.jpg'
-    #while True:
-    ret = 0
+    #ret = 0
     recog(input,dataset,namelist)
