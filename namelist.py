@@ -8,30 +8,29 @@ def loadInfo(dataset_root):
 	file_info = []
 	for folder in folders:
 		folder_path = dataset_root + '/' + folder
-		if not os.path.isdir(folder_path):
-			continue
-		#files = sorted(os.listdir(folder_path))
-		file_info.append(folder_path)
+		items = os.listdir(folder_path)
+		for item in items:
+			item_path = folder_path + '/' + item
+			if not os.path.isdir(item_path):
+				continue
+			files = os.listdir(item_path)
+			file_info.append(map(lambda x: folder + '/' + item + '/' + x, files))
 	return file_info
 
 def saveFileInfo(file_list, output_path):
 	print "Writing file info to", output_path
 	with open(output_path, 'w') as f:
 		label = 0
-		for item in file_list:
-			#for item in filenames:
-			line = ''.join(item[item.find('aligned_images_DB')+18:]) + '\n'
-			#line = ' '.join([item[item.find('webface-cropped')+16:],str(label)]) + '\n'
-			#line = ' '.join([item[item.find('lfw-cropped')+12:],str(label)]) + '\n'
-			f.write(line)
+		for items in file_list:
+			for item in items:
+				line = ''.join(item) + '\n'
+				#line = ' '.join([item[item.find('lfw-cropped')+12:],str(label)]) + '\n'
+				f.write(line)
 			#label += 1
 		f.close()
 if __name__ == '__main__':
-	#root_path = 'F:/zhangli_code/lfw/lfw-cropped'
-	root_path = 'F:/publicData/YouTubeFaces/aligned_images_DB'
+	root_path = 'F:/publicData/YouTubeFaces/frame_images_DB'
 	file_info = loadInfo(root_path)
-	print file_info
-	#output_path = 'F:/zhangli_code/deepid2/DeepID2-master/test/lfw_cropped.txt'
-	output_path = 'F:/zhangli_code/face-recognition-video/YTF-label.txt'
+	output_path = 'F:/zhangli_code/face-recognition-video/data/YTF-frame_images.txt'
 	saveFileInfo(file_info, output_path)
 

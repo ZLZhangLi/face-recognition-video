@@ -18,7 +18,7 @@ def loadInfo(dataset_root):
 # Generate sample pairs.
 def getPair(file_info, num_same = 0):
 	num_class = len(file_info)
-	sample_same = []	
+	sample_same = []
 	for i in xrange(num_class):
 		while True:
 			if len(file_info[i]) > 1:
@@ -64,4 +64,3 @@ if __name__ == '__main__':
 	print('Saving sample pairs to file...')
 	savePair(sample_same, file_sample_same)
 	print('Done!')
-
