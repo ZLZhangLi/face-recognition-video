@@ -25,13 +25,13 @@ import sklearn.metrics.pairwise as pw
 #保存人脸的位置
 global face_rect
 face_rect=[]
-#caffe.set_mode_gpu()
+caffe.set_mode_gpu()
 
 #加载caffe模型
 global net
 net=caffe.Classifier('./VGG_FACE_deploy.prototxt','./VGG_FACE.caffemodel')
 #用来识别一个用户
-def recog(input,dataset,namelist):
+def recog(test_input,dataset,namelist):
     global face_rect
     #src_path='./regist_pic/'+str(md)
     #src_path = input.split(' ').[0]
@@ -40,8 +40,8 @@ def recog(input,dataset,namelist):
     ret = 0
     m = 0
     acc = 0
-    all_people = 1595
-    f1 = file(input, 'r')
+    all_people = 1004
+    f1 = file(test_input, 'r')
     f1_list = f1.readlines()
     f2 = open(namelist,'r')
     f2_list = f2.readlines()
@@ -49,29 +49,29 @@ def recog(input,dataset,namelist):
     for index1 in xrange(len(f1_list)):
         global ret
         global ID
-        img = f1_list[index1].split(' ')[0]
-        label1 = f1_list[index1].split(' ')[1][:-1]
+        img_test = f1_list[index1].split(' ')[0]
+        label_test = f1_list[index1].split(' ')[1][:-1]
         print '正在测试第' + str(index1) + '张人脸'
         for index2 in xrange(len(f2_list)):
             #img = f1_list[index1].split(' ')[0]
             #label1 = f1_list[index1].split(' ')[1][:-1]
-            line = f2_list[index2].split(' ')[0]
-            label2 = f2_list[index2].split(' ')[1][:-1]
+            img_register = f2_list[index2].split(' ')[0]
+            label_register = f2_list[index2].split(' ')[1][:-1]
             #print label2
-            datalist = data + '/' + line
-            imglist = data + '/' + img
+            datalist = data + '/' + img_register
+            imglist = data + '/' + img_test
             res = compar_pic(datalist, imglist)
             #result = scores.append(res)
             if ret < res:
                 ret = res
-                ID = label2
+                ID = label_register
             m += 1
             #print str(res) + ' ' + str(ret)
-        if ID == label1:
+        if ID == label_test:
             acc += 1
         else:
-            print '预测不正确的ID是:' + str(label1) + '，预测为: ' + str(ID)
-        print str(label1) + '的预测得分是：' + str(ret)
+            print '预测不正确的ID是:' + str(label_test) + '，预测为: ' + str(ID)
+        print str(label_test) + '的预测得分是：' + str(ret)
         ret = 0
         ID = 5
         print '当前acc = ' + str(acc)
@@ -118,8 +118,8 @@ def read_image(filelist):
     return X
 
 if __name__ == '__main__':
-    namelist = './data/images_4.txt'
+    namelist = './data/register1.txt'
     dataset = 'F:/dataset/YouTubeFaces/frame_images_DB'
-    input = './data/part2-5.txt'
+    test_input = './data/test1.txt'
     ret = 0
-    recog(input,dataset,namelist)
+    recog(test_input,dataset,namelist)

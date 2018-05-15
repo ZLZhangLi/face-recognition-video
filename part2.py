@@ -34,22 +34,42 @@ net=caffe.Classifier('./VGG_FACE_deploy.prototxt','./VGG_FACE.caffemodel')
 def recog(input,dataset,namelist):
     global face_rect
     #src_path='./regist_pic/'+str(md)
-    src_path = input
+    #src_path = input.split(' ').[0]
     data = dataset
-    label = namelist
+    #label = namelist
     ret = 0
     m = 0
-    f = file(label,'r')
-    for line in f.readlines():
-        datalist = data + '/' + line
-        res = compar_pic(datalist, src_path)
-        #result = scores.append(res)
-        if ret < res:
-            ret = res
-            ID = datalist
-        m += 1
-        print str(res) + ' ' + str(ret)
-    print '识别成功!!!!\n' + '他的ID是:' + str(ID)
+    acc = 0
+    all_people = 1595
+    f1 = file(input, 'r')
+    f1_list = f1.readlines()
+    f2 = open(namelist,'r')
+    f2_list = f2.readlines()
+
+    for index1 in xrange(len(f1_list)):
+        img = f1_list[index1].split(' ')[0]
+        label1 = f1_list[index1].split(' ')[1][:-1]
+        print '正在测试第' + str(index1) + '张人脸'
+        for index2 in xrange(len(f2_list)):
+            #img = f1_list[index1].split(' ')[0]
+            #label1 = f1_list[index1].split(' ')[1][:-1]
+            line = f2_list[index2].split(' ')[0]
+            label2 = f2_list[index1].split(' ')[1][:-1]
+            datalist = data + '/' + line
+            imglist = data + '/' + img
+            res = compar_pic(datalist, imglist)
+            #result = scores.append(res)
+            if ret < res:
+                ret = res
+                ID = label2
+            m += 1
+            #print str(res) + ' ' + str(ret)
+        if ID == label1:
+            acc += 1
+        print '当前acc = ' + str(acc)
+    acc = float(acc/all_people)
+    print '识别成功!!!!\n' + '他的ID是:' + str(label2)
+    print '识别率为：' + str(acc)
     print m
     #return result
 def compar_pic(path1,path2):
@@ -60,13 +80,6 @@ def compar_pic(path1,path2):
     #X  作为 模型的输入
     out = net.forward_all(data = X)
     #fc7是模型的输出,也就是特征值
-    #print out
-    #print net
-    #print net.blobs['fc7']
-    #print net.blobs['fc7'].data
-    #net
-    #net.blobs['fc7']
-    #net.blobs['fc7'].data
     feature1 = np.float64(net.blobs['fc7'].data)
     feature1 = np.reshape(feature1,(test_num,4096))
     #np.savetxt('feature1.txt', feature1, delimiter=',')
@@ -84,7 +97,6 @@ def compar_pic(path1,path2):
     return  predicts
 
 def read_image(filelist):
-
     averageImg = [129.1863,104.7624,93.5940]
     X=np.empty((1,3,224,224))
     word=filelist.split('\n')
@@ -98,8 +110,8 @@ def read_image(filelist):
     return X
 
 if __name__ == '__main__':
-    namelist = './data/YTF_aligned_images.txt'
+    namelist = './data/YTF-frame_images_02.txt'
     dataset = 'F:/publicData/YouTubeFaces/frame_images_DB'
-    input = 'F:/publicData/YouTubeFaces/frame_images_DB/Adel_Al-Jubeir/2/2.59.jpg'
+    input = './data/part3.txt'
     ret = 0
     recog(input,dataset,namelist)
