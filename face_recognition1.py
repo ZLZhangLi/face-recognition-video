@@ -25,12 +25,32 @@ import sklearn.metrics.pairwise as pw
 #保存人脸的位置
 global face_rect
 face_rect=[]
-caffe.set_mode_gpu()
+#caffe.set_mode_gpu()
 
 #加载caffe模型
 global net
 net=caffe.Classifier('./VGG_FACE_deploy.prototxt','./VGG_FACE.caffemodel')
 #用来识别一个用户
+def visualization(data,head,padsize = 1, padval = 0):
+    #data -= data.min()
+    #print data
+    #data += data.max()
+    #print data
+    data = (data - data.min()) / (data.max() - data.min())
+    # 强制性地使输入的图像个数为平方数，不足平方数时，手动添加几幅
+    n = int(np.ceil(np.sqrt(data.shape[0])))
+    print "n = ", n
+    #强制滤波器/卷积核数量为偶数 # 每幅小图像之间加入小空隙
+    padding = ((0, n ** 2 - data.shape[0]), (0, padsize), (0, padsize)) + ((0, 0),) * (data.ndim - 3)
+    data = np.pad(data, padding, mode='constant', constant_values=(padval, padval))
+    #给卷积核命名 # 将所有输入的data图像平复在一个ndarray-data中（tile the filters into an image）
+    data = data.reshape((n, n) + data.shape[1:]).transpose((0, 2, 1, 3) + tuple(range(4, data.ndim + 1)))
+    data = data.reshape((n * data.shape[1], n * data.shape[3]) + data.shape[4:])
+    plt.figure()
+    plt.title(head)
+    plt.imshow(data)
+    plt.axis('off')
+    plt.show()
 def recog(test_input,dataset,namelist):
     global face_rect
     #src_path='./regist_pic/'+str(md)
@@ -88,6 +108,37 @@ def compar_pic(path1,path2):
     #X  作为 模型的输入
     out = net.forward_all(data = X)
     #fc7是模型的输出,也就是特征值
+    #visualization(net.blobs['conv1_1'].data[0], 'post-conv1_1 images')
+    #visualization(net.params['conv1_1'][0].data[:,0], 'conv1_1 weights(filter)')
+    #visualization(net.blobs['conv1_2'].data[0], 'post-conv1_2 images')
+    #visualization(net.blobs['pool1'].data[0], 'post-pool1 images')
+    #visualization(net.blobs['conv2_1'].data[0], 'post-conv2_1 images')
+    #visualization(net.blobs['conv2_2'].data[0], 'post-conv2_2 images')
+    #visualization(net.blobs['pool2'].data[0], 'post-pool2 images')
+    #visualization(net.blobs['conv3_1'].data[0], 'post-conv3_1 images')
+    #visualization(net.blobs['conv3_2'].data[0], 'post-conv3_2 images')
+    #visualization(net.blobs['conv3_3'].data[0], 'post-conv3_3 images')
+    #visualization(net.blobs['pool3'].data[0], 'post-pool3 images')
+    #visualization(net.blobs['conv4_1'].data[0], 'post-conv4_1 images')
+    #visualization(net.blobs['conv4_2'].data[0], 'post-conv4_2 images')
+    #visualization(net.blobs['conv4_3'].data[0], 'post-conv4_3 images')
+    #visualization(net.blobs['pool4'].data[0], 'post-pool4 images')
+    #visualization(net.blobs['conv5_1'].data[0], 'post-conv5_1 images')
+    #visualization(net.blobs['conv5_2'].data[0], 'post-conv5_2 images')
+    #visualization(net.blobs['conv5_3'].data[0], 'post-conv5_3 images')
+    #visualization(net.blobs['pool5'].data[0], 'post-pool5 images')
+    #net.params[‘layername’][0].data
+    #visualization(net.params['conv1_1'][0].data[:,0], 'conv weights(filter)')
+    #visualization(net.params['conv1_2'][0].data[:, 0], 'conv weights(filter)')
+    #visualization(net.params['conv1_3'][0].data[:, 0], 'conv weights(filter)')
+    feat = net.blobs['prob'].data[0]
+    plt.figure(figsize=(15, 3))
+    plt.plot(feat.flat)
+    feat1 = net.blobs['fc7'].data[0]
+    plt.subplot(2, 1, 1)
+    plt.plot(feat1.flat)
+    plt.subplot(2, 1, 2)
+    plt.hist(feat1.flat[feat1.flat > 0], bins=100)
     feature1 = np.float64(net.blobs['fc7'].data)
     feature1 = np.reshape(feature1,(test_num,4096))
     #np.savetxt('feature1.txt', feature1, delimiter=',')
@@ -97,6 +148,11 @@ def compar_pic(path1,path2):
     #X  作为 模型的输入
     out = net.forward_all(data=X)
     #fc7是模型的输出,也就是特征值
+    feat2 = net.blobs['fc7'].data[0]
+    plt.subplot(2, 1, 1)
+    plt.plot(feat2.flat)
+    plt.subplot(2, 1, 2)
+    plt.hist(feat2.flat[feat2.flat > 0], bins=100)
     feature2 = np.float64(net.blobs['fc7'].data)
     feature2=np.reshape(feature2,(test_num,4096))
     #np.savetxt('feature2.txt', feature2, delimiter=',')
@@ -118,8 +174,8 @@ def read_image(filelist):
     return X
 
 if __name__ == '__main__':
-    namelist = './data/register1.txt'
-    dataset = 'F:/dataset/YouTubeFaces/frame_images_DB'
-    test_input = './data/test1.txt'
+    namelist = './data/register1_aligned.txt'
+    dataset = 'F:/dataset/YouTubeFaces/aligned_images_DB'
+    test_input = './data/test_aligned.txt'
     ret = 0
     recog(test_input,dataset,namelist)
