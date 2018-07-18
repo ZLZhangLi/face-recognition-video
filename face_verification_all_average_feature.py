@@ -7,44 +7,13 @@ import sys
 import caffe
 import sklearn.metrics.pairwise as pw
 import math
-
+import datetime
 #  sys.path.insert(0, '/Downloads/caffe-master/python');
 #  load Caffe model
-
 caffe.set_mode_gpu()
-
 global net
-net = caffe.Classifier('VGG_FACE_deploy.prototxt', 'VGG_FACE.caffemodel')
-
-#def compare_pic(feature1, feature2):
-#    predicts = pw.cosine_similarity(feature1, feature2)
-#    return predicts
-
-
-#def get_feature(path):
-#    global net
-#    X = read_image(path)
-#    # test_num = np.shape(X)[0];
-#    # print test_num;
-#    out = net.forward_all(data=X)
-#    feature = np.float64(out['deepid'])
-#    feature = np.reshape(feature, (1, 160))
-#    return feature
-
-#def read_image(filepath):
-#    averageImg = [129.1863, 104.7624, 93.5940]
-#    X = np.empty((1, 3, 144, 144))
-#    filename = filepath.split('\n')
-#    filename = filename[0]
-#    im = skimage.io.imread(filename, as_grey=False)
-#    image = skimage.transform.resize(im, (144, 144)) * 255
-#    #mean_blob.shape = (-1, 1);
-#    #mean = np.sum(mean_blob) / len(mean_blob);
-#    X[0, 0, :, :] = image[:, :, 0] - averageImg[0]
-#    X[0, 1, :, :] = image[:, :, 1] - averageImg[1]
-#    X[0, 2, :, :] = image[:, :, 2] - averageImg[2]
-#    return X
-# 零均值化
+#net = caffe.Classifier('VGG_FACE_deploy.prototxt', 'VGG_FACE.caffemodel')
+net = caffe.Classifier('../resnet_models/ResNet-152-deploy.prototxt', '../resnet_models/ResNet-152-model.caffemodel')
 def visualization(data,head,padsize = 1, padval = 0):
     #data -= data.min()
     #print data
@@ -89,8 +58,8 @@ def getfeat(path):
     out = net.forward_all(data=X)
     # fc7是模型的输出,也就是特征值
     # feature1 = np.float64(out['fc7'])
-    feature = np.float64(net.blobs['fc7'].data)
-    feature = np.reshape(feature, (test_num, 4096))
+    feature = np.float64(net.blobs['fc1000'].data)
+    feature = np.reshape(feature, (test_num, 1000))
     return feature
 def com_pic(feat1,feat2):
     predicts = pw.cosine_similarity(feat1, feat2)
@@ -154,14 +123,12 @@ def saveFileInfo(file_list, output_path):
         f.close()
 
 if __name__ == '__main__':
+    starttime = datetime.datetime.now()
     thershold = 0
     accuracy = 0
     thld = 0
-    i = 100
-    j = 100
     dis1 = 0
     dis2 = 0
-    s = 0
     TEST_SUM = 500
     '''f1_all = np.zeros((1,2622),dtype=float)
     f2_all = np.zeros((1,2622),dtype=float)
@@ -171,79 +138,88 @@ if __name__ == '__main__':
     f2_ave = np.zeros((1,2622),dtype=float)
     f3_ave = np.zeros((1,2622),dtype=float)
     f4_ave = np.zeros((1,2622),dtype=float)'''
-    f1_all = np.zeros((1, 4096), dtype=float)
+    '''f1_all = np.zeros((1, 4096), dtype=float)
     f2_all = np.zeros((1, 4096), dtype=float)
     f3_all = np.zeros((1, 4096), dtype=float)
     f4_all = np.zeros((1, 4096), dtype=float)
     f1_ave = np.zeros((1, 4096), dtype=float)
     f2_ave = np.zeros((1, 4096), dtype=float)
     f3_ave = np.zeros((1, 4096), dtype=float)
-    f4_ave = np.zeros((1, 4096), dtype=float)
+    f4_ave = np.zeros((1, 4096), dtype=float)'''
+    f1_all = np.zeros((1, 1000), dtype=float)
+    f2_all = np.zeros((1, 1000), dtype=float)
+    f3_all = np.zeros((1, 1000), dtype=float)
+    f4_all = np.zeros((1, 1000), dtype=float)
+    f1_ave = np.zeros((1, 1000), dtype=float)
+    f2_ave = np.zeros((1, 1000), dtype=float)
+    f3_ave = np.zeros((1, 1000), dtype=float)
+    f4_ave = np.zeros((1, 1000), dtype=float)
 
     DATA_BASE = "F:/publicData/YouTubeFaces/aligned_images_DB"
-    POSITIVE_TEST_FILE = "Carrie-Anne_Moss/1 Carrie-Anne_Moss/1"
-    NEGATIVE_TEST_FILE = "Carrie-Anne_Moss/1"
-    POSITIVE_SIMILARIY = "Carrie-Anne_Moss/1"
-    NEGATIVE_SIMILARIY = "Carrie-Anne_Moss/1"
+    POSITIVE_TEST_FILE = "./data/split_data/split_positive6.txt"
+    NEGATIVE_TEST_FILE = "./data/split_data/split_negative6.txt"
+    POSITIVE_SIMILARIY = "./data/split_data_similarity/similarity_split_positive_resnet101_3(6).txt"
+    NEGATIVE_SIMILARIY = "./data/split_data_similarity/similarity_split_negative_resnet101_3(6).txt"
     # Positive Test
-    filepath_1 = POSITIVE_TEST_FILE.split(' ')[0]
-    filepath_2 = POSITIVE_TEST_FILE.split(' ')[1]
-    #while i > 0:
-    files_1 = os.listdir(DATA_BASE + '/' + filepath_1)
-    #for i in xrange(len(files_1)):
-    samples_1 = files_1[6].split()
-    for sample1 in samples_1:
-        sample1 = DATA_BASE + '/' + filepath_1 + '/' + sample1
-    feature1 = getfeat(sample1)
-    '''samples_1 = files_1[i].split()
-    for sample1 in samples_1:
-        sample1 = DATA_BASE + '/' + filepath_1 + '/' + sample1
-    feature1 = getfeat(sample1)'''
-    files_2 = os.listdir(DATA_BASE + '/' + filepath_2)
-    samples_2 = files_2[5].split()
-    for sample2 in samples_2:
-        sample2 = DATA_BASE + '/' + filepath_2 + '/' + sample2
-    feature2 = getfeat(sample2)
-    result_p = com_pic(feature1, feature2)
-    '''for j in xrange(len(files_2)):
-        samples_2 = files_2[j].split()
-        for sample2 in samples_2:
-            sample2 = DATA_BASE + '/' + filepath_2 + '/' + sample2
-        feature2 = getfeat(sample2)
-        result_p = com_pic(feature1, feature2)
-        if s < result_p:
-            s = result_p
-            print "****"
-            print j
-            print "****"'''
-    print result_p
-        #saveFileInfo(result_p.tolist(),POSITIVE_SIMILARIY)
-'''
+    f_positive = open(POSITIVE_TEST_FILE, "r")
+    PositiveDataList = f_positive.readlines()
+    f_positive.close()
+    f_negative = open(NEGATIVE_TEST_FILE, "r")
+    NegativeDataList = f_negative.readlines()
+    f_negative.close()
+    for index in range(len(PositiveDataList)):
+        filepath_1 = PositiveDataList[index].split(' ')[0]
+        filepath_2 = PositiveDataList[index].split(' ')[1][:-1]
+        files_1 = os.listdir(DATA_BASE + '/' + filepath_1)
+        for ii in xrange(len(files_1)):
+            samples_1 = random.sample(files_1, 1)
+            #samples_1 = files_1[ii].split()
+            for sample1 in samples_1:
+                sample1 = DATA_BASE + '/' + filepath_1 + '/' + sample1
+            feature1 = getfeat(sample1)
+            f1_all = f1_all + feature1
+        files_2 = os.listdir(DATA_BASE + '/' + filepath_2)
+        for jj in xrange(len(files_2)):
+            samples_2 = random.sample(files_2, 1)
+            #samples_2 = files_2[jj].split()
+            for sample2 in samples_2:
+                sample2 = DATA_BASE + '/' + filepath_2 + '/' + sample2
+            feature2 = getfeat(sample2)
+            f2_all = f2_all + feature2
+        f1_ave = f1_all / len(files_1)
+        f2_ave = f2_all / len(files_2)
+        result_p = com_pic(f1_ave, f2_ave)
+        f1_all = np.zeros((1, 1000), dtype=float)
+        f2_all = np.zeros((1, 1000), dtype=float)
+        f1_ave = np.zeros((1, 1000), dtype=float)
+        f2_ave = np.zeros((1, 1000), dtype=float)
+        print result_p
+        saveFileInfo(result_p.tolist(),POSITIVE_SIMILARIY)
+
     for index in range(len(NegativeDataList)):
         filepath_1 = NegativeDataList[index].split(' ')[0]
         filepath_2 = NegativeDataList[index].split(' ')[1][:-1]
-        while j > 0:
-            files_1 = os.listdir(DATA_BASE + '/' + filepath_1)
-            samples_1 = random.sample(files_1, 1)
+        files_1 = os.listdir(DATA_BASE + '/' + filepath_1)
+        for ii in xrange(len(files_1)):
+            samples_1 = files_1[ii].split()
             for sample1 in samples_1:
                 sample1 = DATA_BASE + '/' + filepath_1 + '/' + sample1
             feature3 = getfeat(sample1)
             f3_all = f3_all + feature3
-            files_2 = os.listdir(DATA_BASE + '/' + filepath_2)
-            samples_2 = random.sample(files_2, 1)
+        files_2 = os.listdir(DATA_BASE + '/' + filepath_2)
+        for jj in xrange(len(files_2)):
+            samples_2 = files_2[jj].split()
             for sample2 in samples_2:
                 sample2 = DATA_BASE + '/' + filepath_2 + '/' + sample2
             feature4 = getfeat(sample2)
             f4_all = f4_all + feature4
-            j -= 1
-        f3_ave = f3_all /100
-        f4_ave = f4_all /100
+        f3_ave = f3_all / len(files_1)
+        f4_ave = f4_all / len(files_2)
         result_n = com_pic(f3_ave, f4_ave)
-        j = 100
-        f3_all = np.zeros((1, 4096), dtype=float)
-        f4_all = np.zeros((1, 4096), dtype=float)
-        f3_ave = np.zeros((1, 4096), dtype=float)
-        f4_ave = np.zeros((1, 4096), dtype=float)
+        f3_all = np.zeros((1, 1000), dtype=float)
+        f4_all = np.zeros((1, 1000), dtype=float)
+        f3_ave = np.zeros((1, 1000), dtype=float)
+        f4_ave = np.zeros((1, 1000), dtype=float)
         print result_n
         saveFileInfo(result_n.tolist(),NEGATIVE_SIMILARIY)
 
@@ -282,5 +258,7 @@ if __name__ == '__main__':
         if accuracy < float(True_Positive + True_Negative) / TEST_SUM:
             accuracy = float(True_Positive + True_Negative) / TEST_SUM
             thld = thershold
-            '''
-    #print 'Best performance: %f, with threshold %f ' % (accuracy, thld)
+    print 'Best performance: %f, with threshold %f ' % (accuracy, thld)
+    endtime = datetime.datetime.now()
+    print 'running time:'
+    print (endtime - starttime).seconds
